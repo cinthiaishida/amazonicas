@@ -184,6 +184,15 @@
           document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') closePopup();
           });
-        </script>
+            
+         map.getViewport().addEventListener('touchend', function(evt) {
+      const pixel = map.getEventPixel(evt);
+      const coordinate = map.getCoordinateFromPixel(pixel);
+      const content = 'Toque detectado em: ' + coordinate;
+      document.getElementById('popup-content').innerHTML = content;
+      overlay.setPosition(coordinate);
+      document.getElementById('popup').classList.add('open');
+      document.body.style.overflow = 'hidden';
+  });
     </body>
 </html>
