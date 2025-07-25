@@ -296,156 +296,40 @@ function onPointerMove(evt) {
     }
 };
 
-map.on('pointermove', onPointerMove);
+map.on('singleclick', function (evt) {
+    var feature = map.forEachFeatureAtPixel(evt.pixel, function(feature) {
+        return feature;
+    });
 
-var popupContent = '';
-var popupCoord = null;
-var featuresPopupActive = false;
-
-function updatePopup() {
-    if (popupContent) {
-        content.innerHTML = popupContent;
-        container.style.display = 'block';
-		overlayPopup.setPosition(popupCoord);
+    if (feature) {
+        var coordinates = feature.getGeometry().getCoordinates();
+        var props = feature.getProperties();
+        var contentHtml = "<strong>" + (props.name || 'Sem nome') + "</strong>";
+        content.innerHTML = contentHtml;
+        overlay.setPosition(coordinates);
     } else {
-        container.style.display = 'none';
+        overlay.setPosition(undefined);
         closer.blur();
     }
-} 
+});
 
-function onSingleClickFeatures(evt) {
-    if (doHover || sketch) {
-        return;
-    }
-    if (!featuresPopupActive) {
-        featuresPopupActive = true;
-    }
-    var pixel = map.getEventPixel(evt.originalEvent);
-    var coord = evt.coordinate;
-    var currentFeature;
-    var currentFeatureKeys;
-    var clusteredFeatures;
-    var popupText = '<ul>';
-    
-    map.forEachFeatureAtPixel(pixel, function(feature, layer) {
-        if (layer && feature instanceof ol.Feature && (layer.get("interactive") || layer.get("interactive") === undefined)) {
-            var doPopup = false;
-            for (var k in layer.get('fieldImages')) {
-                if (layer.get('fieldImages')[k] !== "Hidden") {
-                    doPopup = true;
-                }
-            }
-            currentFeature = feature;
-            clusteredFeatures = feature.get("features");
-            if (typeof clusteredFeatures !== "undefined") {
-                if (doPopup) {
-                    for(var n = 0; n < clusteredFeatures.length; n++) {
-                        currentFeature = clusteredFeatures[n];
-                        currentFeatureKeys = currentFeature.getKeys();
-                        popupText += '<li><table>';
-                        popupText += '<a><b>' + layer.get('popuplayertitle') + '</b></a>';
-                        popupText += createPopupField(currentFeature, currentFeatureKeys, layer);
-                        popupText += '</table></li>';    
-                    }
-                }
-            } else {
-                currentFeatureKeys = currentFeature.getKeys();
-                if (doPopup) {
-                    popupText += '<li><table>';
-                    popupText += '<a><b>' + layer.get('popuplayertitle') + '</b></a>';
-                    popupText += createPopupField(currentFeature, currentFeatureKeys, layer);
-                    popupText += '</table>';
-                }
-            }
-        }
+// Para toque (mobile)
+map.getViewport().addEventListener('touchstart', function(evt) {
+    const touch = evt.touches[0];
+    const pixel = map.getEventPixel(touch);
+    const feature = map.forEachFeatureAtPixel(pixel, function(f) {
+        return f;
     });
-    if (popupText === '<ul>') {
-        popupText = '';
+
+    if (feature) {
+        const coordinates = feature.getGeometry().getCoordinates();
+        const props = feature.getProperties();
+        content.innerHTML = "<strong>" + (props.name || 'Sem nome') + "</strong>";
+        overlay.setPosition(coordinates);
     } else {
-        popupText += '</ul>';
+        overlay.setPosition(undefined);
     }
-	
-	popupContent = popupText;
-    popupCoord = coord;
-    updatePopup();
-}
-
-function onSingleClickWMS(evt) {
-    if (doHover || sketch) {
-        return;
-    }
-    if (!featuresPopupActive) {
-        popupContent = '';
-    }
-    var coord = evt.coordinate;
-    var viewProjection = map.getView().getProjection();
-    var viewResolution = map.getView().getResolution();
-
-    for (var i = 0; i < wms_layers.length; i++) {
-        if (wms_layers[i][1] && wms_layers[i][0].getVisible()) {
-            var url = wms_layers[i][0].getSource().getFeatureInfoUrl(
-                evt.coordinate, viewResolution, viewProjection, {
-                    'INFO_FORMAT': 'text/html',
-                });
-            if (url) {
-                const wmsTitle = wms_layers[i][0].get('popuplayertitle');
-                var ldsRoller = '<div id="lds-roller"><img class="lds-roller-img" style="height: 25px; width: 25px;"></img></div>';
-
-                popupCoord = coord;
-                popupContent += ldsRoller;
-                updatePopup();
-
-                var timeoutPromise = new Promise((resolve, reject) => {
-                    setTimeout(() => {
-                        reject(new Error('Timeout exceeded'));
-                    }, 5000); // (5 second)
-                });
-
-                // Function to try fetch with different option
-                function tryFetch(urls) {
-                    if (urls.length === 0) {
-                        return Promise.reject(new Error('All fetch attempts failed'));
-                    }
-                    return fetch(urls[0])
-                        .then((response) => {
-                            if (response.ok) {
-                                return response.text();
-                            } else {
-                                throw new Error('Fetch failed');
-                            }
-                        })
-                        .catch(() => tryFetch(urls.slice(1))); // Try next URL
-                }
-
-                // List of URLs to try
-                // The first URL is the original, the second is the encoded version, and the third is the proxy
-                const urlsToTry = [
-                    url,
-                    encodeURIComponent(url),
-                    'https://api.allorigins.win/raw?url=' + encodeURIComponent(url)
-                ];
-
-                Promise.race([tryFetch(urlsToTry), timeoutPromise])
-                    .then((html) => {
-                        if (html.indexOf('<table') !== -1) {
-                            popupContent += '<a><b>' + wmsTitle + '</b></a>';
-                            popupContent += html + '<p></p>';
-                            updatePopup();
-                        }
-                    })
-                    .finally(() => {
-                        setTimeout(() => {
-                            var loaderIcon = document.querySelector('#lds-roller');
-                            if (loaderIcon) loaderIcon.remove();
-                        }, 500); // (0.5 second)
-                    });
-            }
-        }
-    }
-}
-
-map.on('singleclick', onSingleClickFeatures);
-map.on('singleclick', onSingleClickWMS);
+}, { passive: true });
 
 //get container
 var topLeftContainerDiv = document.getElementById('top-left-container')
