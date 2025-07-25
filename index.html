@@ -133,50 +133,41 @@
         <script src="layers/layers.js" type="text/javascript"></script> 
         <script src="resources/Autolinker.min.js"></script>
         <script src="resources/qgis2web.js"></script>
-       <script>
+    <script>
 window.addEventListener('load', function () {
   const wait = setInterval(() => {
     if (typeof map !== 'undefined' && typeof ol !== 'undefined') {
       clearInterval(wait);
 
-      // Configura o overlay (popup)
-      const popupContainer = document.getElementById('popup');
-      const popupContent = document.getElementById('popup-content');
-      const popupCloser = document.getElementById('popup-closer');
       const overlay = new ol.Overlay({
-        element: popupContainer,
-        autoPan: { animation: { duration: 250 } },
+        element: document.getElementById('popup'),
+        autoPan: { animation: { duration: 250 } }
       });
       map.addOverlay(overlay);
 
-      popupCloser.onclick = function(e) {
+      document.getElementById('popup-closer').onclick = function(e) {
         e.preventDefault();
         overlay.setPosition(undefined);
-        popupCloser.blur();
         document.body.style.overflow = 'auto';
         return false;
       };
 
-      // Função reutilizável
-      function handleFeatureClick(evt) {
+      function handle(evt) {
+        console.log('interaction event:', evt); // 📝 debug
         onSingleClickFeatures(evt);
         onSingleClickWMS(evt);
       }
 
-      // Clique normal (desktop e Android)
-      map.on('singleclick', handleFeatureClick);
+      map.on('singleclick', handle);
 
-      // Toque manual (iPhone/Safari)
-      map.getViewport().addEventListener('touchend', function(e) {
-        const t = e.changedTouches[0];
+      map.getViewport().addEventListener('pointerdown', function(e) {
         const rect = map.getTargetElement().getBoundingClientRect();
-        const pixel = [ t.clientX - rect.left, t.clientY - rect.top ];
-        const coord = map.getCoordinateFromPixel(pixel);
-        const evt = { originalEvent: e, coordinate: coord, pixel: pixel };
-        handleFeatureClick(evt);
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const coord = map.getCoordinateFromPixel([x, y]);
+        const evt = { originalEvent: e, coordinate: coord, pixel: [x, y] };
+        handle(evt);
       });
-
-      // pointermove já está com onPointerMove
     }
   }, 100);
 });
