@@ -6,13 +6,13 @@
         <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
         <meta name="mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-capable" content="yes">
-        <link rel="stylesheet" href="resources/ol.css">
+        <link rel="stylesheet" href="./resources/ol.css">
         <link rel="stylesheet" href="resources/fontawesome-all.min.css">
         <link rel="stylesheet" type="text/css" href="resources/horsey.min.css">
         <link rel="stylesheet" type="text/css" href="resources/ol3-search-layer.min.css">
         <link href="resources/photon-geocoder-autocomplete.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="resources/ol-layerswitcher.css">
-        <link rel="stylesheet" href="resources/qgis2web.css">
+        <link rel="stylesheet" href="./resources/ol-layerswitcher.css">
+        <link rel="stylesheet" href="./resources/qgis2web.css">
         <style>
         html, body {
             background-color: #ffffff;
@@ -46,54 +46,7 @@
         }
         </style>
         <title></title>
-
-        <style>
-        .ol-popup {
-          position: absolute;
-          background-color: white;
-          box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-          padding: 15px;
-          border-radius: 10px;
-          border: 1px solid #ccc;
-          min-width: 200px;
-          bottom: 12px;
-          left: -50px;
-          z-index: 100;
-        }
-        
-        .ol-popup:after, .ol-popup:before {
-          top: 100%;
-          border: solid transparent;
-          content: " ";
-          height: 0;
-          width: 0;
-          position: absolute;
-          pointer-events: none;
-        }
-        
-        .ol-popup:after {
-          border-top-color: white;
-          border-width: 10px;
-          left: 48px;
-          margin-left: -10px;
-        }
-        .ol-popup:before {
-          border-top-color: #ccc;
-          border-width: 11px;
-          left: 48px;
-          margin-left: -11px;
-        }
-        
-        .ol-popup-closer {
-          text-decoration: none;
-          position: absolute;
-          top: 2px;
-          right: 8px;
-        }
-        </style>
-    </head>
-    <body>
-             <!-- Caixa de texto informativa -->
+        <!-- Caixa de texto informativa -->
       <div id="info-box" style="
         position: fixed;
         top: 10px;
@@ -112,8 +65,8 @@
       ">
         Clique nos pontos ou utilize a caixa de busca para obter informações sobre as apresentações
       </div>
-
-        
+    </head>
+    <body>
         <div id="map">
             <div id="popup" class="ol-popup">
                 <a href="#" id="popup-closer" class="ol-popup-closer"></a>
@@ -121,78 +74,16 @@
             </div>
         </div>
         <script src="resources/qgis2web_expressions.js"></script>
-        <script src="resources/functions.js"></script>
-        <script src="resources/ol.js"></script>
+        <script src="./resources/functions.js"></script>
+        <script src="./resources/ol.js"></script>
         <script src="resources/horsey.min.js"></script>
         <script src="resources/ol3-search-layer.js"></script>
-        <script src="resources/ol-layerswitcher.js"></script>
+        <script src="./resources/ol-layerswitcher.js"></script>
         <script src="resources/photon-geocoder-autocomplete.min.js"></script>
         <script src="layers/_1.js"></script>
         <script src="styles/_1_style.js"></script>
-        <script src="layers/layers.js" type="text/javascript"></script> 
-        <script src="resources/Autolinker.min.js"></script>
-        <script src="resources/qgis2web.js"></script>
-        <script>
-          function openPopup(content) {
-            const popup = document.getElementById('popup');
-            const popupContent = document.getElementById('popup-content');
-            popupContent.innerHTML = content;
-            popup.classList.add('open');
-            document.body.style.overflow = 'hidden'; // trava scroll do fundo
-          }
-        
-          function closePopup() {
-            const popup = document.getElementById('popup');
-            popup.classList.remove('open');
-            document.body.style.overflow = 'auto'; // libera scroll do fundo
-          }
-        
-          document.getElementById('popup-closer').addEventListener('click', function(e) {
-            e.preventDefault();
-            closePopup();
-          });
-        
-          // Fecha ao clicar fora do conteúdo
-          document.getElementById('popup').addEventListener('click', function(e) {
-            if (e.target === this) {
-              closePopup();
-            }
-          });
-        
-          // Exemplo: abrir popup programaticamente
-          // openPopup('<p>Olá! Isso funciona no celular :)</p>');
-        
-          // Se seu script já chama um overlay do OL com `setPosition`, adapte este trecho:
-          const overlay = new ol.Overlay({
-            element: document.getElementById('popup'),
-            autoPan: true,
-            autoPanAnimation: { duration: 250 }
-          });
-          map.addOverlay(overlay);
-        
-          // Exemplo adaptado para abrir no clique do mapa:
-          map.on('singleclick', function(evt) {
-            const coordinate = evt.coordinate;
-            const content = 'Coordenadas: ' + coordinate;
-            document.getElementById('popup-content').innerHTML = content;
-            overlay.setPosition(coordinate);
-            document.getElementById('popup').classList.add('open');
-            document.body.style.overflow = 'hidden';
-          });
-        
-          // Fecha com esc
-          document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') closePopup();
-          });
-            
-         map.getViewport().addEventListener('touchend', function(evt) {
-      const pixel = map.getEventPixel(evt);
-      const coordinate = map.getCoordinateFromPixel(pixel);
-      const content = 'Toque detectado em: ' + coordinate;
-      document.getElementById('popup-content').innerHTML = content;
-      overlay.setPosition(coordinate);
-      document.getElementById('popup').classList.add('open');
-      document.body.style.overflow = 'hidden';
-  });
+        <script src="./layers/layers.js" type="text/javascript"></script> 
+        <script src="./resources/Autolinker.min.js"></script>
+        <script src="./resources/qgis2web.js"></script>
     </body>
 </html>
