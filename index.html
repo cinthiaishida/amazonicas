@@ -134,77 +134,65 @@
         <script src="resources/Autolinker.min.js"></script>
         <script src="resources/qgis2web.js"></script>
         <script>
-          function openPopup(content) {
-            const popup = document.getElementById('popup');
-            const popupContent = document.getElementById('popup-content');
-            popupContent.innerHTML = content;
-            popup.classList.add('open');
-            document.body.style.overflow = 'hidden'; // trava scroll do fundo
-          }
-        
-          function closePopup() {
-            const popup = document.getElementById('popup');
-            popup.classList.remove('open');
-            document.body.style.overflow = 'auto'; // libera scroll do fundo
-          }
-        
-          document.getElementById('popup-closer').addEventListener('click', function(e) {
-            e.preventDefault();
-            closePopup();
-          });
-        
-          // Fecha ao clicar fora do conteúdo
-          document.getElementById('popup').addEventListener('click', function(e) {
-            if (e.target === this) {
-              closePopup();
-            }
-          });
-        
-          // Exemplo: abrir popup programaticamente
-          // openPopup('<p>Olá! Isso funciona no celular :)</p>');
-        
-          // Se seu script já chama um overlay do OL com `setPosition`, adapte este trecho:
-          const overlay = new ol.Overlay({
-            element: document.getElementById('popup'),
-            autoPan: true,
-            autoPanAnimation: { duration: 250 }
-          });
-          map.addOverlay(overlay);
-        
-          // Exemplo adaptado para abrir no clique do mapa:
-        function handleMapClick(evt) {
-              const coordinate = map.getEventCoordinate(evt);
-              const content = 'Coordenadas: ' + coordinate;
-              document.getElementById('popup-content').innerHTML = content;
-              overlay.setPosition(coordinate);
-              document.getElementById('popup').classList.add('open');
-              document.body.style.overflow = 'hidden';
-            }
-            
-            // Clique em desktop
-            map.on('singleclick', function(evt) {
-              handleMapClick(evt.originalEvent);
-            });
-            
-            // Toque em celular
-            map.getViewport().addEventListener('touchend', function(evt) {
-              handleMapClick(evt);
-            });
-        
-          // Fecha com esc
-          document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') closePopup();
-          });
-            
-         map.getViewport().addEventListener('touchend', function(evt) {
-      const pixel = map.getEventPixel(evt);
-      const coordinate = map.getCoordinateFromPixel(pixel);
-      const content = 'Toque detectado em: ' + coordinate;
-      document.getElementById('popup-content').innerHTML = content;
-      overlay.setPosition(coordinate);
-      document.getElementById('popup').classList.add('open');
-      document.body.style.overflow = 'hidden';
+  function openPopup(content, coordinate) {
+    document.getElementById('popup-content').innerHTML = content;
+    overlay.setPosition(coordinate);
+    document.getElementById('popup').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closePopup() {
+    document.getElementById('popup').classList.remove('open');
+    document.body.style.overflow = 'auto';
+  }
+
+  document.getElementById('popup-closer').addEventListener('click', function(e) {
+    e.preventDefault();
+    closePopup();
   });
-        </script>
+
+  // Fecha ao clicar fora do conteúdo do popup
+  document.getElementById('popup').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closePopup();
+    }
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closePopup();
+  });
+
+  // Cria overlay e adiciona ao mapa
+  const overlay = new ol.Overlay({
+    element: document.getElementById('popup'),
+    autoPan: true,
+    autoPanAnimation: { duration: 250 }
+  });
+  map.addOverlay(overlay);
+
+  // Clique normal (desktop e Android)
+  map.on('singleclick', function(evt) {
+    const coordinate = evt.coordinate;
+    const content = 'Coordenadas: ' + coordinate;
+    openPopup(content, coordinate);
+  });
+
+  // Toque em iOS e Android
+  map.getViewport().addEventListener('touchend', function(evt) {
+    // Delay curto para evitar falsos positivos de duplo toque
+    setTimeout(() => {
+      const touch = evt.changedTouches[0];
+      const rect = map.getTargetElement().getBoundingClientRect();
+      const pixel = [
+        touch.clientX - rect.left,
+        touch.clientY - rect.top
+      ];
+      const coordinate = map.getCoordinateFromPixel(pixel);
+      const content = 'Coordenadas (toque): ' + coordinate;
+      openPopup(content, coordinate);
+    }, 0);
+  }, false);
+</script>
+
     </body>
 </html>
