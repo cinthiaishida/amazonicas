@@ -446,6 +446,26 @@ function onSingleClickWMS(evt) {
 
 map.on('singleclick', onSingleClickFeatures);
 map.on('singleclick', onSingleClickWMS);
+// Compatibilidade com iPhone
+map.getViewport().addEventListener('touchend', function (e) {
+  const touch = e.changedTouches[0];
+  const rect = map.getTargetElement().getBoundingClientRect();
+
+  const pixel = [
+    touch.clientX - rect.left,
+    touch.clientY - rect.top
+  ];
+  const coordinate = map.getCoordinateFromPixel(pixel);
+
+  const evt = {
+    originalEvent: e,
+    coordinate: coordinate,
+    pixel: pixel
+  };
+
+  onSingleClickFeatures(evt);
+  onSingleClickWMS(evt);
+});
 
 //get container
 var topLeftContainerDiv = document.getElementById('top-left-container')
