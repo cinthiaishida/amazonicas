@@ -171,14 +171,24 @@
           map.addOverlay(overlay);
         
           // Exemplo adaptado para abrir no clique do mapa:
-          map.on('singleclick', function(evt) {
-            const coordinate = evt.coordinate;
-            const content = 'Coordenadas: ' + coordinate;
-            document.getElementById('popup-content').innerHTML = content;
-            overlay.setPosition(coordinate);
-            document.getElementById('popup').classList.add('open');
-            document.body.style.overflow = 'hidden';
-          });
+        function handleMapClick(evt) {
+              const coordinate = map.getEventCoordinate(evt);
+              const content = 'Coordenadas: ' + coordinate;
+              document.getElementById('popup-content').innerHTML = content;
+              overlay.setPosition(coordinate);
+              document.getElementById('popup').classList.add('open');
+              document.body.style.overflow = 'hidden';
+            }
+            
+            // Clique em desktop
+            map.on('singleclick', function(evt) {
+              handleMapClick(evt.originalEvent);
+            });
+            
+            // Toque em celular
+            map.getViewport().addEventListener('touchend', function(evt) {
+              handleMapClick(evt);
+            });
         
           // Fecha com esc
           document.addEventListener('keydown', function(e) {
