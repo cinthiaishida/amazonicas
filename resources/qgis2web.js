@@ -58,16 +58,25 @@ map.getView().fit([-8671788.332796, -2991539.274667, 211507.032507, 2173994.8614
     map.addControl(bottomRightContainer)
 
 //popup
-var container = document.getElementById('popup');
-var content = document.getElementById('popup-content');
-var closer = document.getElementById('popup-closer');
-var sketch;
-
-closer.onclick = function() {
-    container.style.display = 'none';
-    closer.blur();
-    return false;
-};
+	var container = document.getElementById('popup');
+	var content = document.getElementById('popup-content');
+	var closer = document.getElementById('popup-closer');
+	
+	var overlay = new ol.Overlay({
+	    element: container,
+	    autoPan: {
+	        animation: {
+	            duration: 250,
+	        },
+	    },
+	});
+	map.addOverlay(overlay);
+	
+	closer.onclick = function () {
+	    overlay.setPosition(undefined);
+	    closer.blur();
+	    return false;
+	};
 var overlayPopup = new ol.Overlay({
     element: container,
 	autoPan: true
