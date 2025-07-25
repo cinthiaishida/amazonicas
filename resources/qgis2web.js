@@ -58,16 +58,25 @@ map.getView().fit([-8671788.332796, -2991539.274667, 211507.032507, 2173994.8614
     map.addControl(bottomRightContainer)
 
 //popup
-var container = document.getElementById('popup');
-var content = document.getElementById('popup-content');
-var closer = document.getElementById('popup-closer');
-var sketch;
-
-closer.onclick = function() {
-    container.style.display = 'none';
-    closer.blur();
-    return false;
-};
+	var container = document.getElementById('popup');
+	var content = document.getElementById('popup-content');
+	var closer = document.getElementById('popup-closer');
+	
+	var overlay = new ol.Overlay({
+	    element: container,
+	    autoPan: {
+	        animation: {
+	            duration: 250,
+	        },
+	    },
+	});
+	map.addOverlay(overlay);
+	
+	closer.onclick = function () {
+	    overlay.setPosition(undefined);
+	    closer.blur();
+	    return false;
+	};
 var overlayPopup = new ol.Overlay({
     element: container,
 	autoPan: true
@@ -435,8 +444,40 @@ function onSingleClickWMS(evt) {
     }
 }
 
-map.on('singleclick', onSingleClickFeatures);
-map.on('singleclick', onSingleClickWMS);
+	map.on('singleclick', function (evt) {
+	    var feature = map.forEachFeatureAtPixel(evt.pixel, function(feature) {
+	        return feature;
+	    });
+	
+	    if (feature) {
+	        var coordinates = feature.getGeometry().getCoordinates();
+	        var props = feature.getProperties();
+	        var contentHtml = "<strong>" + (props.name || 'Sem nome') + "</strong>";
+	        content.innerHTML = contentHtml;
+	        overlay.setPosition(coordinates);
+	    } else {
+	        overlay.setPosition(undefined);
+	        closer.blur();
+	    }
+	});
+	
+	// Para toque (mobile)
+	map.getViewport().addEventListener('touchstart', function(evt) {
+	    const touch = evt.touches[0];
+	    const pixel = map.getEventPixel(touch);
+	    const feature = map.forEachFeatureAtPixel(pixel, function(f) {
+	        return f;
+	    });
+	
+	    if (feature) {
+	        const coordinates = feature.getGeometry().getCoordinates();
+	        const props = feature.getProperties();
+	        content.innerHTML = "<strong>" + (props.name || 'Sem nome') + "</strong>";
+	        overlay.setPosition(coordinates);
+	    } else {
+	        overlay.setPosition(undefined);
+	    }
+	}, { passive: true });
 
 //get container
 var topLeftContainerDiv = document.getElementById('top-left-container')
