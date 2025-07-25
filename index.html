@@ -49,38 +49,46 @@
 
         <style>
         .ol-popup {
-          display: none;
-          position: fixed !important;
-          top: 0;
-          left: 0;
-          width: 100vw;
-          height: 100vh;
-          background-color: rgba(0, 0, 0, 0.7);
-          z-index: 1000;
-          justify-content: center;
-          align-items: center;
+          position: absolute;
+          background-color: white;
+          box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+          padding: 15px;
+          border-radius: 10px;
+          border: 1px solid #ccc;
+          min-width: 200px;
+          bottom: 12px;
+          left: -50px;
+          z-index: 100;
         }
         
-        .ol-popup.open {
-          display: flex;
+        .ol-popup:after, .ol-popup:before {
+          top: 100%;
+          border: solid transparent;
+          content: " ";
+          height: 0;
+          width: 0;
+          position: absolute;
+          pointer-events: none;
         }
         
-        #popup-content {
-          background-color: #fff;
-          padding: 20px;
-          border-radius: 8px;
-          max-width: 90%;
-          max-height: 80vh;
-          overflow-y: auto;
+        .ol-popup:after {
+          border-top-color: white;
+          border-width: 10px;
+          left: 48px;
+          margin-left: -10px;
+        }
+        .ol-popup:before {
+          border-top-color: #ccc;
+          border-width: 11px;
+          left: 48px;
+          margin-left: -11px;
         }
         
         .ol-popup-closer {
-          position: absolute;
-          top: 10px;
-          right: 20px;
-          font-size: 24px;
           text-decoration: none;
-          color: #333;
+          position: absolute;
+          top: 2px;
+          right: 8px;
         }
         </style>
     </head>
