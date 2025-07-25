@@ -133,68 +133,53 @@
         <script src="layers/layers.js" type="text/javascript"></script> 
         <script src="resources/Autolinker.min.js"></script>
         <script src="resources/qgis2web.js"></script>
-        <script>
-  // Aguarda o mapa estar disponível
-  window.addEventListener('load', function () {
-    // Aguarda até que o OpenLayers e o mapa estejam definidos
-    const interval = setInterval(() => {
-      if (typeof map !== 'undefined' && typeof ol !== 'undefined') {
-        clearInterval(interval);
+       <script>
+window.addEventListener('load', function () {
+  const wait = setInterval(() => {
+    if (typeof map !== 'undefined' && typeof ol !== 'undefined') {
+      clearInterval(wait);
 
-        const overlay = new ol.Overlay({
-          element: document.getElementById('popup'),
-          autoPan: true,
-          autoPanAnimation: { duration: 250 }
-        });
-        map.addOverlay(overlay);
+      // Configura o overlay (popup)
+      const popupContainer = document.getElementById('popup');
+      const popupContent = document.getElementById('popup-content');
+      const popupCloser = document.getElementById('popup-closer');
+      const overlay = new ol.Overlay({
+        element: popupContainer,
+        autoPan: { animation: { duration: 250 } },
+      });
+      map.addOverlay(overlay);
 
-        function openPopup(content, coordinate) {
-          document.getElementById('popup-content').innerHTML = content;
-          overlay.setPosition(coordinate);
-          document.getElementById('popup').classList.add('open');
-          document.body.style.overflow = 'hidden';
-        }
+      popupCloser.onclick = function(e) {
+        e.preventDefault();
+        overlay.setPosition(undefined);
+        popupCloser.blur();
+        document.body.style.overflow = 'auto';
+        return false;
+      };
 
-        function closePopup() {
-          document.getElementById('popup').classList.remove('open');
-          document.body.style.overflow = 'auto';
-        }
-
-        document.getElementById('popup-closer').addEventListener('click', function(e) {
-          e.preventDefault();
-          closePopup();
-        });
-
-        document.getElementById('popup').addEventListener('click', function(e) {
-          if (e.target === this) {
-            closePopup();
-          }
-        });
-
-        document.addEventListener('keydown', function(e) {
-          if (e.key === 'Escape') closePopup();
-        });
-
-        // Clique em desktop e Android
-        map.on('singleclick', function(evt) {
-          const coordinate = evt.coordinate;
-          openPopup('Coordenadas: ' + coordinate, coordinate);
-        });
-
-        // Toque em iOS e Android
-        map.getViewport().addEventListener('touchend', function(evt) {
-          const touch = evt.changedTouches[0];
-          const rect = map.getTargetElement().getBoundingClientRect();
-          const pixel = [
-            touch.clientX - rect.left,
-            touch.clientY - rect.top
-          ];
-          const coordinate = map.getCoordinateFromPixel(pixel);
-          openPopup('Toque detectado: ' + coordinate, coordinate);
-        }, false);
+      // Função reutilizável
+      function handleFeatureClick(evt) {
+        onSingleClickFeatures(evt);
+        onSingleClickWMS(evt);
       }
-    }, 100);
-  });
+
+      // Clique normal (desktop e Android)
+      map.on('singleclick', handleFeatureClick);
+
+      // Toque manual (iPhone/Safari)
+      map.getViewport().addEventListener('touchend', function(e) {
+        const t = e.changedTouches[0];
+        const rect = map.getTargetElement().getBoundingClientRect();
+        const pixel = [ t.clientX - rect.left, t.clientY - rect.top ];
+        const coord = map.getCoordinateFromPixel(pixel);
+        const evt = { originalEvent: e, coordinate: coord, pixel: pixel };
+        handleFeatureClick(evt);
+      });
+
+      // pointermove já está com onPointerMove
+    }
+  }, 100);
+});
 </script>
 
     </body>
